@@ -29,8 +29,7 @@ async def dashboard(request: Request):
     user_id = get_current_user_id(request)
     if user_id is None:
         return RedirectResponse(url="/login", status_code=302)
-    return templates.TemplateResponse("dashboard.html", {"request": request})
-
+    return templates.TemplateResponse(request, "dashboard.html", {})
 
 @router.get("/automation")
 async def automation_page(request: Request):
@@ -38,8 +37,7 @@ async def automation_page(request: Request):
     user_id = get_current_user_id(request)
     if user_id is None:
         return RedirectResponse(url="/login", status_code=302)
-    return templates.TemplateResponse("automation.html", {"request": request})
-
+    return templates.TemplateResponse(request, "automation.html", {})
 
 @router.get("/profile")
 async def profile_page(request: Request):
@@ -47,8 +45,7 @@ async def profile_page(request: Request):
     user_id = get_current_user_id(request)
     if user_id is None:
         return RedirectResponse(url="/login", status_code=302)
-    return templates.TemplateResponse("profile.html", {"request": request})
-
+    return templates.TemplateResponse(request, "profile.html", {})
 
 @router.get("/admin")
 async def admin_page(request: Request, db: Session = Depends(get_db)):
@@ -61,4 +58,4 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
     if not user or user.role != "admin":
         return RedirectResponse(url="/dashboard", status_code=302)
         
-    return templates.TemplateResponse("admin.html", {"request": request})
+    return templates.TemplateResponse(request, "admin.html", {})
