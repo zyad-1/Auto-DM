@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram DM Automation — Dashboard</title>
+    <meta name="description" content="Automate Instagram comment replies and direct messages based on keywords.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg></div>
+            <span class="brand-text">DM Auto</span>
+        </div>
+            <button class="nav-btn active" data-tab="campaigns" id="nav-campaigns"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Campaigns</span></button>
+            <a class="nav-btn" href="/automation" id="nav-automation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span>Automation</span></a>
+            <button class="nav-btn" data-tab="logs" id="nav-logs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>Error Logs</span></button>
+            <button class="nav-btn" data-tab="settings" id="nav-settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Settings</span></button>
+            <a class="nav-btn" href="/profile" id="nav-profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>Profile</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <!-- Account Widget (rendered by JS) -->
+            <div id="sidebar-account-widget"></div>
+            <div class="status-indicator" id="status-indicator"><span class="status-dot"></span><span class="status-text">Checking…</span></div>
+            <button class="nav-btn logout-btn" id="btn-logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></button>
+        </div>
+    </aside>
+
+    <header class="mobile-header" id="mobile-header">
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+        <div class="brand-icon small"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg></div>
+        <span class="mobile-title">DM Auto</span>
+    </header>
+
+    <main class="main-content" id="main-content">
+        <!-- Token Expiry Banner (rendered by JS) -->
+        <div id="expiry-banner-container"></div>
+
+        <!-- Campaigns Tab -->
+        <section class="tab-panel active" id="tab-campaigns">
+            <div class="page-header">
+                <div><h1>Campaigns</h1><p class="page-subtitle">Overview of your keyword-triggered automations</p></div>
+                <a href="/automation" class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Automation</a>
+            </div>
+            <div class="campaigns-grid" id="campaigns-grid"></div>
+            <div class="empty-state" id="empty-state" style="display:none;">
+                <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+                <h3>No campaigns yet</h3><p>Create your first automation to start engaging.</p>
+                <a href="/automation" class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Go to Automation</a>
+            </div>
+        </section>
+
+        <!-- Error Logs Tab -->
+        <section class="tab-panel" id="tab-logs">
+            <div class="page-header">
+                <div><h1>Error Logs</h1><p class="page-subtitle">API failures and webhook processing errors</p></div>
+                <button class="btn btn-ghost" id="btn-clear-logs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Clear Logs</button>
+            </div>
+            <div class="logs-container" id="logs-container"></div>
+            <div class="empty-state" id="logs-empty" style="display:none;">
+                <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+                <h3>No errors</h3><p>Everything is running smoothly.</p>
+            </div>
+        </section>
+
+        <!-- Settings Tab -->
+        <section class="tab-panel" id="tab-settings">
+            <div class="page-header"><div><h1>Settings</h1><p class="page-subtitle">Configure your Instagram API credentials</p></div></div>
+
+            <!-- OAuth Connect Card (rendered by JS) -->
+            <div id="oauth-card-container"></div>
+
+            <!-- Manual Credentials Card -->
+            <div class="settings-card glass-card">
+                <div class="card-header"><div class="card-header-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><h2>Manual Credentials</h2></div>
+                <form id="settings-form" autocomplete="off">
+                    <div class="form-group"><label for="input-access-token">Access Token</label><input type="password" id="input-access-token" placeholder="Paste your long-lived access token" required><span class="form-hint" id="token-hint">Current: <span id="token-masked">Not set</span></span></div>
+                    <div class="form-row">
+                        <div class="form-group"><label for="input-page-id">Facebook Page ID</label><input type="text" id="input-page-id" placeholder="e.g. 123456789012345" required></div>
+                        <div class="form-group"><label for="input-ig-account-id">Instagram Business Account ID</label><input type="text" id="input-ig-account-id" placeholder="e.g. 17841400000000000" required></div>
+                    </div>
+                    <div class="form-actions"><button type="submit" class="btn btn-primary" id="btn-save-settings">Save Credentials</button></div>
+                </form>
+            </div>
+
+            <!-- Webhook Info Card -->
+            <div class="settings-card glass-card" style="margin-top:1.5rem;">
+                <div class="card-header"><div class="card-header-icon info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div><h2>Webhook Info</h2></div>
+                <div class="info-block">
+                    <p>Point your Facebook Webhook to:</p>
+                    <div class="code-block"><code>POST https://your-domain.com/webhook/instagram</code></div>
+                    <p style="margin-top:.75rem;">Verification uses <strong>WEBHOOK_VERIFY_TOKEN</strong> from <code>.env</code>.</p>
+                    <p style="margin-top:.5rem;">Subscribe to: <code>comments</code>, <code>messages</code>.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- History Modal -->
+    <div class="modal-overlay" id="history-modal-overlay">
+        <div class="modal glass-card modal-lg" id="history-modal">
+            <div class="modal-header"><h2 id="history-title">Trigger History</h2><button class="modal-close" id="history-modal-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+            <div class="history-actions"><button class="btn btn-sm btn-ghost" id="btn-retry-all" style="display:none;">Retry All Failed</button></div>
+            <div class="history-list" id="history-list"></div>
+        </div>
+    </div>
+
+    <!-- Test Modal -->
+    <div class="modal-overlay" id="test-modal-overlay">
+        <div class="modal glass-card modal-sm" id="test-modal">
+            <div class="modal-header"><h2>Test Results</h2><button class="modal-close" id="test-modal-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+            <div class="test-result" id="test-result"></div>
+        </div>
+    </div>
+
+    <!-- Page Selector Modal (for multi-page OAuth) -->
+    <div class="modal-overlay" id="page-selector-overlay">
+        <div class="modal glass-card modal-sm">
+            <div class="modal-header"><h2>Select Facebook Page</h2><button class="modal-close" id="page-selector-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+            <p style="font-size:.85rem;color:var(--text-secondary);margin-bottom:1rem;">Choose which Facebook Page to connect with Instagram:</p>
+            <div class="page-list" id="page-list"></div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+    <script src="/static/app.js"></script>
+</body>
+</html>

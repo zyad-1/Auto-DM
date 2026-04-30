@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram DM Automation — Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .profile-container { max-width: 600px; margin: 0 auto; }
+        .profile-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; margin-bottom: 2rem; }
+        .profile-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+        .profile-avatar-large { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; color: #fff; background: var(--gradient); }
+        .profile-info h2 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+        .profile-info p { color: var(--muted); font-size: 0.95rem; }
+        .role-badge { display: inline-block; padding: 0.2rem 0.6rem; background: rgba(124, 58, 237, 0.15); color: #a78bfa; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; margin-top: 0.5rem; }
+        .role-badge.admin { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 0.5rem; }
+        .form-group input { width: 100%; padding: 0.85rem 1rem; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--font); transition: border 0.2s; }
+        .form-group input:focus { border-color: rgba(124,58,237,0.5); outline: none; }
+        .form-group input:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.5rem; color: #fff; }
+        
+        .danger-zone { border-color: rgba(239, 68, 68, 0.3); }
+        .danger-zone .section-title { color: #ef4444; }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); width: 100%; padding: 0.85rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-danger:hover { background: rgba(239, 68, 68, 0.2); }
+        
+        .save-btn { width: auto; padding: 0.75rem 1.5rem; }
+        
+        .meta-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+        .meta-stat { background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px; }
+        .meta-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; margin-bottom: 0.25rem; }
+        .meta-val { font-size: 0.9rem; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg></div>
+            <span class="brand-text">DM Auto</span>
+        </div>
+        <nav class="sidebar-nav" id="sidebar-nav-container">
+            <a class="nav-btn" href="/dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Dashboard</span></a>
+            <a class="nav-btn" href="/automation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span>Automation</span></a>
+            <a class="nav-btn active" href="/profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>Profile</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <div id="sidebar-account-widget"></div>
+            <div class="status-indicator" id="status-indicator"><span class="status-dot"></span><span class="status-text">Checking…</span></div>
+            <button class="nav-btn logout-btn" id="btn-logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></button>
+        </div>
+    </aside>
+
+    <main class="main-content" id="main-content">
+        <div class="page-header">
+            <div>
+                <h1>Your Profile</h1>
+                <p class="page-subtitle">Manage your account settings and preferences</p>
+            </div>
+        </div>
+
+        <div class="profile-container">
+            <!-- Profile Info Card -->
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar-large" id="profile-avatar">U</div>
+                    <div class="profile-info">
+                        <h2 id="profile-name-display">Loading...</h2>
+                        <p id="profile-email-display">loading@example.com</p>
+                        <span class="role-badge" id="profile-role-badge">USER</span>
+                    </div>
+                </div>
+
+                <form id="profile-form">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="input-full-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="input-email" disabled>
+                        <small style="color: var(--muted); font-size: 0.75rem; margin-top: 0.25rem; display: block;">Email cannot be changed.</small>
+                    </div>
+                    <div style="text-align: right;">
+                        <button type="submit" class="btn btn-primary save-btn" id="btn-save-profile">Update Profile</button>
+                    </div>
+                </form>
+
+                <div class="meta-stats">
+                    <div class="meta-stat">
+                        <div class="meta-label">Member Since</div>
+                        <div class="meta-val" id="meta-created">...</div>
+                    </div>
+                    <div class="meta-stat">
+                        <div class="meta-label">Last Login</div>
+                        <div class="meta-val" id="meta-login">...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Change Password Card -->
+            <div class="profile-card">
+                <h3 class="section-title">Change Password</h3>
+                <form id="password-form">
+                    <div class="form-group">
+                        <label>Current Password</label>
+                        <input type="password" id="input-current-pwd" required>
+                    </div>
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input type="password" id="input-new-pwd" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Password</label>
+                        <input type="password" id="input-confirm-pwd" required>
+                    </div>
+                    <div style="text-align: right;">
+                        <button type="submit" class="btn btn-primary save-btn" id="btn-save-pwd">Update Password</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="profile-card danger-zone">
+                <h3 class="section-title">Danger Zone</h3>
+                <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                    Once you delete your account, there is no going back. Please be certain.
+                </p>
+                <button class="btn-danger" id="btn-delete-account">Delete Account</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="/static/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load user data into profile form
+            if (window.currentUser) {
+                populateProfile(window.currentUser);
+            } else {
+                // If app.js hasn't loaded it yet or failed
+                try {
+                    const res = await fetch('/api/auth/me');
+                    if (res.ok) {
+                        const user = await res.json();
+                        populateProfile(user);
+                    }
+                } catch(e) {}
+            }
+
+            // Also check admin status to inject admin nav link
+            if (window.currentUser && window.currentUser.role === 'admin') {
+                const nav = document.getElementById('sidebar-nav-container');
+                const adminLink = document.createElement('a');
+                adminLink.className = 'nav-btn';
+                adminLink.href = '/admin';
+                adminLink.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg><span>Admin Panel</span>`;
+                nav.appendChild(adminLink);
+            }
+
+            function populateProfile(user) {
+                document.getElementById('input-full-name').value = user.full_name;
+                document.getElementById('input-email').value = user.email;
+                document.getElementById('profile-name-display').textContent = user.full_name;
+                document.getElementById('profile-email-display').textContent = user.email;
+                
+                const initials = user.full_name ? user.full_name.substring(0, 2).toUpperCase() : user.email.substring(0, 2).toUpperCase();
+                const avatar = document.getElementById('profile-avatar');
+                avatar.textContent = initials;
+                
+                // Deterministic color
+                let hash = 0;
+                for (let i = 0; i < user.email.length; i++) hash = user.email.charCodeAt(i) + ((hash << 5) - hash);
+                const color = `hsl(${Math.abs(hash) % 360}, 70%, 50%)`;
+                avatar.style.background = color;
+
+                const roleBadge = document.getElementById('profile-role-badge');
+                roleBadge.textContent = user.role.toUpperCase();
+                if (user.role === 'admin') roleBadge.classList.add('admin');
+                
+                const created = new Date(user.created_at);
+                document.getElementById('meta-created').textContent = created.toLocaleDateString();
+                const login = new Date(user.last_login);
+                document.getElementById('meta-login').textContent = user.last_login ? login.toLocaleDateString() : 'First login';
+            }
+
+            // Profile update form
+            document.getElementById('profile-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('btn-save-profile');
+                btn.textContent = 'Saving...';
+                btn.disabled = true;
+                
+                try {
+                    const res = await fetch('/api/auth/profile', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            full_name: document.getElementById('input-full-name').value
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast('Profile updated successfully', 'success');
+                        document.getElementById('profile-name-display').textContent = document.getElementById('input-full-name').value;
+                    } else {
+                        showToast(data.error || 'Failed to update', 'error');
+                    }
+                } catch(err) {
+                    showToast('Network error', 'error');
+                } finally {
+                    btn.textContent = 'Update Profile';
+                    btn.disabled = false;
+                }
+            });
+
+            // Password update form
+            document.getElementById('password-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const current = document.getElementById('input-current-pwd').value;
+                const newPwd = document.getElementById('input-new-pwd').value;
+                const confirmPwd = document.getElementById('input-confirm-pwd').value;
+                
+                if (newPwd !== confirmPwd) {
+                    showToast('New passwords do not match', 'error');
+                    return;
+                }
+                
+                const btn = document.getElementById('btn-save-pwd');
+                btn.textContent = 'Updating...';
+                btn.disabled = true;
+                
+                try {
+                    const res = await fetch('/api/auth/change-password', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            current_password: current,
+                            new_password: newPwd
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast('Password updated successfully', 'success');
+                        document.getElementById('password-form').reset();
+                    } else {
+                        showToast(data.error || 'Failed to update password', 'error');
+                    }
+                } catch(err) {
+                    showToast('Network error', 'error');
+                } finally {
+                    btn.textContent = 'Update Password';
+                    btn.disabled = false;
+                }
+            });
+
+            // Delete account
+            document.getElementById('btn-delete-account').addEventListener('click', async () => {
+                if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
+                    try {
+                        const res = await fetch('/api/auth/delete-account', { method: 'POST' });
+                        if (res.ok) {
+                            window.location.href = '/login';
+                        }
+                    } catch(err) {
+                        showToast('Failed to delete account', 'error');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
