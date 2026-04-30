@@ -28,6 +28,7 @@ OAUTH_SCOPES = (
     "instagram_basic,"
     "instagram_manage_comments,"
     "instagram_manage_messages,"
+    "pages_messaging,"
     "pages_show_list,"
     "pages_read_engagement,"
     "business_management"
@@ -262,11 +263,41 @@ async def _complete_oauth(
 ) -> RedirectResponse:
     """Complete OAuth by fetching IG account from selected page and saving to DB."""
     page_id = selected_page["id"]
+    page_access_token = selected_page.get("access_token", "")
+
+    # If we have a page-specific access token, use it for messaging
+    # The page access token from /me/accounts has the correct permissions
+    # for the Send API (POST /{page_id}/messages)
+    effective_token = page_access_token if page_access_token else long_token
+
+    logger.info(
+        "OAuth completing: page_id=%s has_page_token=%s user_token_len=%d page_token_len=%d",
+        page_id, bool(page_access_token), len(long_token), len(page_access_token) if page_access_token else 0
+    )
+
+    # ── Exchange page token for long-lived page token ──
+    if page_access_token:
+        try:
+            ll_page_resp = await client.get(f"{GRAPH_API}/oauth/access_token", params={
+                "grant_type": "fb_exchange_token",
+                "client_id": _env("META_APP_ID"),
+                "client_secret": _env("META_APP_SECRET"),
+                "fb_exchange_token": page_access_token,
+            })
+            ll_page_data = ll_page_resp.json()
+            if "access_token" in ll_page_data:
+                effective_token = ll_page_data["access_token"]
+                logger.info("✅ Exchanged page token for long-lived page token (len=%d)", len(effective_token))
+            else:
+                logger.warning("Could not exchange page token: %s",
+                             ll_page_data.get("error", {}).get("message", "unknown"))
+        except Exception as e:
+            logger.warning("Page token exchange failed, using original: %s", e)
 
     # ── Get Instagram Business Account ID ──
     ig_resp = await client.get(f"{GRAPH_API}/{page_id}", params={
         "fields": "instagram_business_account",
-        "access_token": long_token,
+        "access_token": effective_token,
     })
     ig_data = ig_resp.json()
     ig_biz = ig_data.get("instagram_business_account")
@@ -280,7 +311,7 @@ async def _complete_oauth(
     # ── Get IG Profile Details ──
     profile_resp = await client.get(f"{GRAPH_API}/{ig_id}", params={
         "fields": "id,username,profile_picture_url,followers_count,account_type",
-        "access_token": long_token,
+        "access_token": effective_token,
     })
     profile = profile_resp.json()
     username = profile.get("username", "")
@@ -289,8 +320,10 @@ async def _complete_oauth(
     account_type = profile.get("account_type", "BUSINESS")
 
     # ── Save to DB ──
+    # IMPORTANT: We save the Page Access Token (not the user token)
+    # because the Send API requires a Page Access Token with MESSAGING task
     config = _get_user_config(db, user_id)
-    config.access_token = long_token
+    config.access_token = effective_token
     config.page_id = page_id
     config.instagram_account_id = ig_id
     config.ig_username = username
@@ -301,7 +334,10 @@ async def _complete_oauth(
     config.oauth_connected = True
     db.commit()
 
-    logger.info("OAuth complete — @%s connected to user %d", username, user_id)
+    logger.info(
+        "✅ OAuth complete — @%s connected to user %d | page_id=%s | ig_id=%s | token_type=PAGE | token_len=%d",
+        username, user_id, page_id, ig_id, len(effective_token)
+    )
 
     resp = RedirectResponse(
         url=f"/dashboard?tab=settings&status=connected&username={username}",

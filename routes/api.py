@@ -326,8 +326,11 @@ async def retry_trigger(trigger_id: int, request: Request, db: Session = Depends
         raise HTTPException(status_code=400, detail="No credentials configured")
 
     access_token = config.access_token
-    ig_account_id = config.instagram_account_id or ""
+    page_id = config.page_id or ""
     results = {"reply": None, "dm": None}
+
+    if not page_id:
+        raise HTTPException(status_code=400, detail="No Page ID configured — required for Instagram messaging")
 
     # Retry failed reply
     if pc.reply_status == "failed" and campaign.comment_reply_text:
@@ -343,13 +346,14 @@ async def retry_trigger(trigger_id: int, request: Request, db: Session = Depends
             pc.reply_error = reply_result.get("error", "Unknown")
             results["reply"] = "failed"
 
-    # Retry failed DM
-    if pc.dm_status == "failed" and pc.user_id and ig_account_id:
+    # Retry failed DM — use page_id endpoint with fallback
+    if pc.dm_status == "failed" and pc.user_id and page_id:
         cta_label = campaign.cta_label if campaign.cta_enabled else None
         cta_url = campaign.cta_url if campaign.cta_enabled else None
-        dm_result = await instagram.send_dm(
-            pc.user_id, campaign.dm_message_text, access_token, ig_account_id,
-            cta_label=cta_label, cta_url=cta_url,
+        comment_id = pc.comment_id if campaign.campaign_type == "comment" else None
+        dm_result = await instagram.send_dm_with_fallback(
+            pc.user_id, campaign.dm_message_text, access_token, page_id,
+            comment_id=comment_id, cta_label=cta_label, cta_url=cta_url,
         )
         if dm_result["success"]:
             pc.dm_status = "sent"
@@ -395,8 +399,11 @@ async def retry_all_failed(campaign_id: int, request: Request, db: Session = Dep
         raise HTTPException(status_code=400, detail="No credentials configured")
 
     access_token = config.access_token
-    ig_account_id = config.instagram_account_id or ""
+    page_id = config.page_id or ""
     retried = 0
+
+    if not page_id:
+        raise HTTPException(status_code=400, detail="No Page ID configured — required for Instagram messaging")
 
     for pc in failed:
         changed = False
@@ -407,11 +414,14 @@ async def retry_all_failed(campaign_id: int, request: Request, db: Session = Dep
                 pc.reply_error = None
                 campaign.reply_sent_count = (campaign.reply_sent_count or 0) + 1
                 changed = True
-        if pc.dm_status == "failed" and pc.user_id and ig_account_id:
+        if pc.dm_status == "failed" and pc.user_id and page_id:
             cta_label = campaign.cta_label if campaign.cta_enabled else None
             cta_url = campaign.cta_url if campaign.cta_enabled else None
-            r = await instagram.send_dm(pc.user_id, campaign.dm_message_text, access_token, ig_account_id,
-                                        cta_label=cta_label, cta_url=cta_url)
+            comment_id = pc.comment_id if campaign.campaign_type == "comment" else None
+            r = await instagram.send_dm_with_fallback(
+                pc.user_id, campaign.dm_message_text, access_token, page_id,
+                comment_id=comment_id, cta_label=cta_label, cta_url=cta_url
+            )
             if r["success"]:
                 pc.dm_status = "sent"
                 pc.dm_error = None

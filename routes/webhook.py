@@ -117,21 +117,30 @@ async def receive_webhook(request: Request, db: Session = Depends(get_db)):
             
         access_token = creds["access_token"]
         ig_account_id = creds["ig_account_id"]
+        page_id = creds["page_id"]
         user_id = creds["user_id"]
+
+        logger.info(
+            "🔑 Credentials loaded: ig_account_id=%s page_id=%s token_len=%d",
+            ig_account_id, page_id, len(access_token) if access_token else 0
+        )
+
+        if not page_id:
+            logger.error("❌ No Page ID configured for IG Account %s — DMs will fail!", ig_account_id)
 
         for change in entry.get("changes", []):
             if change.get("field") == "comments":
-                await _handle_comment(change, db, user_id, access_token, ig_account_id)
+                await _handle_comment(change, db, user_id, access_token, ig_account_id, page_id)
 
         for msg_event in entry.get("messaging", []):
-            await _handle_messaging(msg_event, db, user_id, access_token, ig_account_id)
+            await _handle_messaging(msg_event, db, user_id, access_token, ig_account_id, page_id)
 
     return {"status": "ok"}
 
 
 # ─── Comment Handler ───────────────────────────────────────────────────────────
 
-async def _handle_comment(change: dict, db: Session, user_id: int, access_token: str, ig_account_id: str):
+async def _handle_comment(change: dict, db: Session, user_id: int, access_token: str, ig_account_id: str, page_id: str):
     value = change.get("value", {})
     comment_id = value.get("id")
     comment_text = value.get("text", "")
@@ -200,16 +209,19 @@ async def _handle_comment(change: dict, db: Session, user_id: int, access_token:
                 _log_error(db, "instagram_api", f"Reply failed for {comment_id}: {reply_error}",
                            json.dumps(r), campaign.id)
 
-        # DM Message Flow
-        if commenter_id and ig_account_id:
+        # DM Message Flow — now uses page_id and Private Reply fallback
+        if commenter_id and page_id:
             follow_result = None
             if campaign.require_follow:
                 follow_result = await instagram.check_user_follows(ig_account_id, commenter_id, access_token)
             
             if follow_result and follow_result.get("follows") is False:
-                # Send the "not following" message instead of the main flow
+                # Send the "not following" message
                 dm_message = campaign.not_following_message or "Please follow us first!"
-                r = await instagram.send_dm(commenter_id, dm_message, access_token, ig_account_id)
+                r = await instagram.send_dm_with_fallback(
+                    commenter_id, dm_message, access_token, page_id,
+                    comment_id=comment_id
+                )
                 if r["success"]:
                     dm_status = "sent"
                     campaign.dm_sent_count = (campaign.dm_sent_count or 0) + 1
@@ -220,9 +232,12 @@ async def _handle_comment(change: dict, db: Session, user_id: int, access_token:
                 # User follows (or follow check disabled) - proceed with full flow
                 dm_status = "sent"
                 
-                # 1. Opening DM
+                # 1. Opening DM — use private reply (comment_id) for initial contact
                 if campaign.opening_dm_enabled and campaign.opening_dm_text:
-                    r1 = await instagram.send_dm(commenter_id, campaign.opening_dm_text, access_token, ig_account_id)
+                    r1 = await instagram.send_dm_with_fallback(
+                        commenter_id, campaign.opening_dm_text, access_token, page_id,
+                        comment_id=comment_id
+                    )
                     if not r1["success"]:
                         dm_status = "failed"
                         dm_error = r1.get("error", "Unknown")
@@ -231,29 +246,38 @@ async def _handle_comment(change: dict, db: Session, user_id: int, access_token:
                 if dm_status == "sent":
                     cta_label = campaign.cta_label if campaign.cta_enabled else None
                     cta_url = campaign.cta_url if campaign.cta_enabled else None
-                    r2 = await instagram.send_dm(commenter_id, campaign.dm_message_text, access_token, ig_account_id,
-                                                cta_label=cta_label, cta_url=cta_url)
+                    
+                    # If we didn't send an opening DM, try private reply for main message
+                    use_comment_id = comment_id if not (campaign.opening_dm_enabled and campaign.opening_dm_text) else None
+                    
+                    r2 = await instagram.send_dm_with_fallback(
+                        commenter_id, campaign.dm_message_text, access_token, page_id,
+                        comment_id=use_comment_id, cta_label=cta_label, cta_url=cta_url
+                    )
                     if r2["success"]:
                         campaign.dm_sent_count = (campaign.dm_sent_count or 0) + 1
                     else:
                         dm_status = "failed"
                         dm_error = r2.get("error", "Unknown")
                 
-                # 3. Ask for Email
+                # 3. Ask for Email (always uses direct DM since private reply is spent)
                 if dm_status == "sent" and campaign.ask_email_enabled and campaign.ask_email_message:
-                    r3 = await instagram.send_dm(commenter_id, campaign.ask_email_message, access_token, ig_account_id)
+                    r3 = await instagram.send_dm(
+                        commenter_id, campaign.ask_email_message, access_token, page_id
+                    )
                     if not r3["success"]:
                         dm_status = "failed"
                         dm_error = r3.get("error", "Unknown")
                         
             if dm_status == "sent":
-                logger.info("✓ DM flow sent to %s", commenter_id)
+                logger.info("✅ DM flow sent to %s", commenter_id)
             else:
-                logger.error("✗ DM flow failed: %s", dm_error)
+                logger.error("❌ DM flow failed: %s", dm_error)
                 _log_error(db, "instagram_api", f"DM flow failed to {commenter_id}: {dm_error}", None, campaign.id)
-        elif not ig_account_id:
+        elif not page_id:
             dm_status = "failed"
-            dm_error = "No IG Account ID configured"
+            dm_error = "No Page ID configured — required for Instagram messaging"
+            logger.error("❌ %s", dm_error)
 
         # Determine action_taken
         if reply_status == "sent" and dm_status == "sent":
@@ -277,7 +301,7 @@ async def _handle_comment(change: dict, db: Session, user_id: int, access_token:
 
 # ─── Story Reply Handler ──────────────────────────────────────────────────────
 
-async def _handle_messaging(msg_event: dict, db: Session, user_id: int, access_token: str, ig_account_id: str):
+async def _handle_messaging(msg_event: dict, db: Session, user_id: int, access_token: str, ig_account_id: str, page_id: str):
     sender_id = msg_event.get("sender", {}).get("id", "")
     message = msg_event.get("message", {})
     message_id = message.get("mid", "")
@@ -327,11 +351,14 @@ async def _handle_messaging(msg_event: dict, db: Session, user_id: int, access_t
         dm_status = "none"
         dm_error = None
 
-        if sender_id and ig_account_id:
+        if sender_id and page_id:
             cta_label = campaign.cta_label if campaign.cta_enabled else None
             cta_url = campaign.cta_url if campaign.cta_enabled else None
-            r = await instagram.send_dm(sender_id, campaign.dm_message_text, access_token, ig_account_id,
-                                        cta_label=cta_label, cta_url=cta_url)
+            # Story replies: user already initiated conversation, use direct DM via page_id
+            r = await instagram.send_dm(
+                sender_id, campaign.dm_message_text, access_token, page_id,
+                cta_label=cta_label, cta_url=cta_url
+            )
             if r["success"]:
                 dm_status = "sent"
                 campaign.dm_sent_count = (campaign.dm_sent_count or 0) + 1
@@ -340,6 +367,9 @@ async def _handle_messaging(msg_event: dict, db: Session, user_id: int, access_t
                 dm_error = r.get("error", "Unknown")
                 _log_error(db, "instagram_api", f"Story DM failed to {sender_id}: {dm_error}",
                            json.dumps(r), campaign.id)
+        elif not page_id:
+            dm_status = "failed"
+            dm_error = "No Page ID configured"
 
         db.add(ProcessedComment(
             comment_id=message_id, campaign_id=campaign.id,
