@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram DM Automation — Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+        .stat-title { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; font-weight: 600; }
+        .stat-value { font-size: 2rem; font-weight: 700; color: #fff; }
+        
+        .users-table-wrapper { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        .users-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .users-table th { padding: 1rem 1.5rem; background: rgba(255,255,255,0.02); font-size: 0.8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        .users-table td { padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; vertical-align: middle; }
+        .users-table tr:last-child td { border-bottom: none; }
+        .users-table tr:hover { background: rgba(255,255,255,0.01); }
+        
+        .user-cell { display: flex; align-items: center; gap: 1rem; }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 600; color: #fff; flex-shrink: 0; }
+        .user-name { font-weight: 600; color: var(--text); }
+        .user-email { font-size: 0.8rem; color: var(--muted); }
+        
+        .badge { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .badge.admin { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .badge.user { background: rgba(124, 58, 237, 0.15); color: #a78bfa; }
+        .badge.active { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+        .badge.inactive { background: rgba(255, 255, 255, 0.1); color: var(--muted); }
+        
+        .action-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.8rem; color: var(--text); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; font-family: var(--font); }
+        .action-btn:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
+        .action-btn.danger { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+        .action-btn.danger:hover { background: rgba(239, 68, 68, 0.1); border-color: #ef4444; }
+        
+        .actions-cell { display: flex; gap: 0.5rem; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg></div>
+            <span class="brand-text">DM Auto</span>
+        </div>
+        <nav class="sidebar-nav" id="sidebar-nav-container">
+            <a class="nav-btn" href="/dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Dashboard</span></a>
+            <a class="nav-btn" href="/automation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span>Automation</span></a>
+            <a class="nav-btn" href="/profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>Profile</span></a>
+            <a class="nav-btn active" href="/admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg><span>Admin Panel</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <div id="sidebar-account-widget"></div>
+            <div class="status-indicator" id="status-indicator"><span class="status-dot"></span><span class="status-text">Checking…</span></div>
+            <button class="nav-btn logout-btn" id="btn-logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></button>
+        </div>
+    </aside>
+
+    <main class="main-content" id="main-content">
+        <div class="page-header">
+            <div>
+                <h1>Admin Panel</h1>
+                <p class="page-subtitle">Manage users and system data</p>
+            </div>
+        </div>
+
+        <div class="admin-stats">
+            <div class="stat-card">
+                <div class="stat-title">Total Users</div>
+                <div class="stat-value" id="stat-total-users">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Active Users</div>
+                <div class="stat-value" id="stat-active-users">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Total Campaigns</div>
+                <div class="stat-value" id="stat-total-campaigns">-</div>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 1rem; color: #fff;">Registered Users</h3>
+        <div class="users-table-wrapper">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Campaigns</th>
+                        <th>Last Login</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="users-tbody">
+                    <tr><td colspan="6" style="text-align: center; padding: 2rem;">Loading users...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="/static/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            loadUsers();
+        });
+
+        async function loadUsers() {
+            try {
+                const res = await fetch('/api/admin/users');
+                if (!res.ok) {
+                    if (res.status === 403) window.location.href = '/dashboard';
+                    throw new Error('Failed to load users');
+                }
+                const data = await res.json();
+                renderUsers(data.users);
+            } catch(e) {
+                document.getElementById('users-tbody').innerHTML = `<tr><td colspan="6" style="text-align:center; color: #ef4444;">Error loading users</td></tr>`;
+            }
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('users-tbody');
+            tbody.innerHTML = '';
+            
+            let activeCount = 0;
+            let campaignsCount = 0;
+            
+            users.forEach(user => {
+                if (user.is_active) activeCount++;
+                campaignsCount += user.campaigns_count || 0;
+                
+                const initials = user.full_name ? user.full_name.substring(0, 2).toUpperCase() : user.email.substring(0, 2).toUpperCase();
+                let hash = 0;
+                for (let i = 0; i < user.email.length; i++) hash = user.email.charCodeAt(i) + ((hash << 5) - hash);
+                const color = `hsl(${Math.abs(hash) % 360}, 70%, 50%)`;
+                
+                const lastLoginStr = user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never';
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar" style="background: ${color}">${initials}</div>
+                            <div>
+                                <div class="user-name">${user.full_name || 'No Name'}</div>
+                                <div class="user-email">${user.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge ${user.role}">${user.role.toUpperCase()}</span></td>
+                    <td><span class="badge ${user.is_active ? 'active' : 'inactive'}">${user.is_active ? 'ACTIVE' : 'INACTIVE'}</span></td>
+                    <td><strong>${user.campaigns_count || 0}</strong></td>
+                    <td><div style="font-size: 0.85rem">${lastLoginStr}</div><div style="font-size: 0.75rem; color: var(--muted)">${user.last_ip || ''}</div></td>
+                    <td>
+                        <div class="actions-cell">
+                            ${window.currentUser && window.currentUser.id !== user.id ? `
+                                <button class="action-btn ${user.is_active ? 'danger' : ''}" onclick="toggleUser(${user.id})">
+                                    ${user.is_active ? 'Deactivate' : 'Activate'}
+                                </button>
+                                ${user.role === 'user' ? `<button class="action-btn" onclick="makeAdmin(${user.id})">Make Admin</button>` : ''}
+                            ` : '<span style="font-size: 0.8rem; color: var(--muted)">Current User</span>'}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            document.getElementById('stat-total-users').textContent = users.length;
+            document.getElementById('stat-active-users').textContent = activeCount;
+            document.getElementById('stat-total-campaigns').textContent = campaignsCount;
+        }
+
+        async function toggleUser(id) {
+            if (!confirm('Are you sure you want to change this user\'s status?')) return;
+            try {
+                const res = await fetch(`/api/admin/users/${id}/toggle-status`, { method: 'POST' });
+                if (res.ok) loadUsers();
+            } catch(e) {}
+        }
+
+        async function makeAdmin(id) {
+            if (!confirm('Are you sure you want to promote this user to Admin? They will have full access to all users.')) return;
+            try {
+                const res = await fetch(`/api/admin/users/${id}/make-admin`, { method: 'POST' });
+                if (res.ok) loadUsers();
+            } catch(e) {}
+        }
+    </script>
+</body>
+</html>

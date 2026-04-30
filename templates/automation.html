@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automation — DM Auto</title>
+    <meta name="description" content="Build and manage Instagram comment & story automations.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- ─── Sidebar ──────────────────────────────────────────── -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg></div>
+            <span class="brand-text">DM Auto</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a class="nav-btn" href="/dashboard" id="nav-campaigns"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Campaigns</span></a>
+            <a class="nav-btn active" href="/automation" id="nav-automation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span>Automation</span></a>
+            <a class="nav-btn" href="/profile" id="nav-profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>Profile</span></a>
+            <a class="nav-btn" href="/dashboard?tab=logs" id="nav-logs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>Error Logs</span></a>
+            <a class="nav-btn" href="/dashboard?tab=settings" id="nav-settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Settings</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <div id="sidebar-account-widget"></div>
+            <div class="status-indicator" id="status-indicator"><span class="status-dot"></span><span class="status-text">Checking…</span></div>
+            <button class="nav-btn logout-btn" id="btn-logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></button>
+        </div>
+    </aside>
+
+    <!-- ─── Mobile Header ──────────────────────────────────── -->
+    <header class="mobile-header" id="mobile-header">
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+        <div class="brand-icon small"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg></div>
+        <span class="mobile-title">Automation</span>
+    </header>
+
+    <!-- ─── Main Content ─────────────────────────────────────── -->
+    <main class="main-content" id="main-content">
+
+        <!-- ═══ Automation List View ═══ -->
+        <section id="automation-list-view">
+            <div class="page-header">
+                <div><h1>Automation</h1><p class="page-subtitle">Manage your Instagram comment &amp; story automations</p></div>
+                <button class="btn btn-primary" id="btn-new-automation">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    New Automation
+                </button>
+            </div>
+            <div class="campaigns-grid" id="automations-grid"></div>
+            <div class="empty-state" id="automations-empty" style="display:none;">
+                <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+                <h3>No automations yet</h3><p>Create your first automation to start engaging.</p>
+                <button class="btn btn-primary" id="btn-new-automation-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Create Automation
+                </button>
+            </div>
+        </section>
+
+        <!-- ═══ Automation Builder View ═══ -->
+        <section id="automation-builder-view" style="display:none;">
+            <div class="builder-top-bar">
+                <button class="btn btn-ghost" id="btn-back-to-list"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+                <h1 id="builder-title">New Automation</h1>
+                <div style="width:80px"></div>
+            </div>
+
+            <div class="builder-layout">
+                <!-- ─── LEFT: Form ─── -->
+                <div class="builder-form">
+                    <form id="automation-form">
+                        <input type="hidden" id="automation-edit-id" value="">
+
+                        <!-- Type Tabs -->
+                        <div class="type-tabs" id="type-tabs">
+                            <button type="button" class="type-tab active" data-type="comment"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comment</button>
+                            <button type="button" class="type-tab" data-type="story_reply"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> Story Reply</button>
+                        </div>
+                        <input type="hidden" id="input-campaign-type" value="comment">
+
+                        <!-- Trigger Keywords -->
+                        <div class="form-group">
+                            <label>Trigger Keywords <span class="chip-counter" id="keyword-counter">0/20</span></label>
+                            <div class="chip-input-container" id="keyword-chips-container">
+                                <input type="text" id="input-keyword-chip" class="chip-input" placeholder="Type keyword and press Enter...">
+                            </div>
+                            <div class="chip-suggestions">
+                                <span class="chip-suggestion" data-kw="link">link</span>
+                                <span class="chip-suggestion" data-kw="shop">shop</span>
+                                <span class="chip-suggestion" data-kw="order">order</span>
+                                <span class="chip-suggestion" data-kw="buy">buy</span>
+                                <span class="chip-suggestion" data-kw="price">price</span>
+                                <span class="chip-suggestion" data-kw="discount">discount</span>
+                                <span class="chip-suggestion" data-kw="info">info</span>
+                                <span class="chip-suggestion" data-kw="details">details</span>
+                            </div>
+                            <input type="hidden" id="input-keywords" required>
+                        </div>
+
+                        <!-- Post Selector (Comment) -->
+                        <div id="comment-fields">
+                            <div class="form-group">
+                                <label>Instagram Post ID</label>
+                                <div class="input-with-btn"><input type="text" id="input-post-id" placeholder="Select a post or enter ID"><button type="button" class="btn btn-sm btn-ghost" id="btn-browse-posts">Browse</button></div>
+                            </div>
+                            <div class="post-selector-inline" id="post-selector-inline" style="display:none;">
+                                <div class="post-selector-header"><span class="post-selector-title">Select a Post</span><button type="button" class="btn-icon btn-sm" id="btn-close-selector-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+                                <div class="post-grid inline" id="post-grid-inline"></div>
+                            </div>
+                            <div class="post-preview" id="post-preview" style="display:none;"><img id="preview-image" src="" alt=""><p id="preview-caption"></p></div>
+                        </div>
+
+                        <!-- Story Selector -->
+                        <div id="story-fields" style="display:none;">
+                            <div class="form-group">
+                                <label>Story ID (optional)</label>
+                                <div class="input-with-btn"><input type="text" id="input-story-id" placeholder="Leave empty for any story"><button type="button" class="btn btn-sm btn-ghost" id="btn-browse-stories">Browse</button></div>
+                            </div>
+                            <div class="post-selector-inline" id="story-selector-inline" style="display:none;">
+                                <div class="post-selector-header"><span class="post-selector-title">Select a Story</span><button type="button" class="btn-icon btn-sm" id="btn-close-story-selector-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+                                <div class="post-grid inline" id="story-grid-inline"></div>
+                            </div>
+                        </div>
+
+                        <!-- Comment Reply Variations -->
+                        <div id="comment-reply-section">
+                            <div class="toggle-section"><label class="toggle-label"><input type="checkbox" id="input-reply-enabled"><span class="toggle-switch"></span><span>He/she will get a reply to their comment</span></label></div>
+                            <div id="reply-variations-container" class="collapsible nested-box" style="display:none;">
+                                <label class="nested-label">Message Variations <span id="variation-counter" class="ml-1 text-muted text-sm">0/5</span></label>
+                                <div id="variations-list"></div>
+                                <button type="button" class="btn btn-sm btn-ghost mt-half" id="btn-add-variation">+ Add Variation</button>
+                            </div>
+                        </div>
+
+                        <!-- Follow Gate -->
+                        <div class="toggle-section mt-1"><label class="toggle-label"><input type="checkbox" id="input-require-follow"><span class="toggle-switch"></span><span>Follow Gate</span></label><div class="form-hint ml-toggle">User must follow before receiving the main DM.</div></div>
+                        <div id="follow-fields" class="collapsible nested-box" style="display:none;">
+                            <div class="form-group mb-0"><label>Message for non-followers</label><textarea id="input-not-following-msg" rows="2" class="preview-trigger" placeholder="Follow us first to receive this!"></textarea></div>
+                        </div>
+
+                        <!-- Opening DM -->
+                        <div class="toggle-section mt-1"><label class="toggle-label"><input type="checkbox" id="input-opening-dm-enabled"><span class="toggle-switch"></span><span>Opening DM</span></label><div class="form-hint ml-toggle">Send an initial message before the main DM.</div></div>
+                        <div id="opening-dm-fields" class="collapsible nested-box" style="display:none;">
+                            <div class="form-group mb-0"><label>Opening Message</label><textarea id="input-opening-dm-text" rows="2" class="preview-trigger" placeholder="Hey! Thanks for your interest..."></textarea></div>
+                        </div>
+
+                        <!-- Main DM -->
+                        <div class="form-group mt-1"><label>Main DM Message</label><textarea id="input-dm-text" rows="3" class="preview-trigger" placeholder="Here is the information you requested..." required></textarea></div>
+
+                        <!-- CTA -->
+                        <div class="toggle-section"><label class="toggle-label"><input type="checkbox" id="input-cta-enabled"><span class="toggle-switch"></span><span>Add CTA Button to DM</span></label></div>
+                        <div id="cta-fields" class="collapsible nested-box" style="display:none;">
+                            <div id="cta-links-list"></div>
+                            <button type="button" class="btn btn-sm btn-ghost mt-half" id="btn-add-cta-link">+ Add Link</button>
+                        </div>
+
+                        <!-- Ask Email -->
+                        <div class="toggle-section mt-1"><label class="toggle-label"><input type="checkbox" id="input-ask-email-enabled"><span class="toggle-switch"></span><span>Ask for email</span></label></div>
+                        <div id="ask-email-fields" class="collapsible nested-box" style="display:none;">
+                            <div class="form-group mb-0"><label>Email Collection Message</label><textarea id="input-ask-email-msg" rows="2" class="preview-trigger" placeholder="By the way, what's your email so we can send updates?"></textarea></div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="form-actions pt-2">
+                            <button type="button" class="btn btn-ghost" id="btn-cancel-builder">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="btn-save-automation">Save Automation</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- ─── RIGHT: Instagram Phone Preview ─── -->
+                <div class="builder-preview">
+                    <div class="preview-sticky">
+                        <div class="ig-phone">
+                            <!-- Status Bar -->
+                            <div class="ig-statusbar">
+                                <span class="ig-sb-time">9:41</span>
+                                <div class="ig-sb-icons">
+                                    <svg width="16" height="12" viewBox="0 0 16 12" fill="white"><rect x="0" y="6" width="3" height="6" rx="0.5" opacity=".4"/><rect x="4.5" y="4" width="3" height="8" rx="0.5" opacity=".6"/><rect x="9" y="2" width="3" height="10" rx="0.5" opacity=".8"/><rect x="13.5" y="0" width="3" height="12" rx="0.5"/></svg>
+                                    <svg width="16" height="12" viewBox="0 0 16 12" fill="white"><path d="M8 3C5.8 3 3.8 3.8 2.3 5.1L0.5 3.3C2.5 1.5 5.1.5 8 .5s5.5 1 7.5 2.8L13.7 5.1C12.2 3.8 10.2 3 8 3z" opacity=".35"/><path d="M8 6.5c-1.4 0-2.7.5-3.7 1.3L2.5 6C4 4.8 5.9 4 8 4s4 .8 5.5 2L11.7 7.8C10.7 7 9.4 6.5 8 6.5z" opacity=".55"/><path d="M8 10c-.8 0-1.5.3-2 .8L4.2 9C5.2 8.1 6.5 7.5 8 7.5s2.8.6 3.8 1.5L10 10.8c-.5-.5-1.2-.8-2-.8z" opacity=".8"/><circle cx="8" cy="12" r="1.5"/></svg>
+                                    <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0" y="1" width="21" height="10" rx="2" stroke="white" stroke-width="1"/><rect x="22" y="3.5" width="2" height="5" rx="1" fill="white" opacity=".4"/><rect x="1.5" y="2.5" width="18" height="7" rx="1" fill="white"/></svg>
+                                </div>
+                            </div>
+                            <!-- Chat Header -->
+                            <div class="ig-chat-header">
+                                <svg class="ig-back-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+                                <div class="ig-avatar"></div>
+                                <div class="ig-user-info">
+                                    <span class="ig-username" id="ig-preview-username">your_account</span>
+                                    <span class="ig-user-status">Active now</span>
+                                </div>
+                                <div class="ig-header-actions">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                </div>
+                            </div>
+                            <!-- Chat Body -->
+                            <div class="ig-chat-body" id="ig-chat-body">
+                                <!-- Rendered by JS -->
+                            </div>
+                            <!-- Input Bar -->
+                            <div class="ig-input-bar">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" width="22" height="22"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                <div class="ig-input-fake">Message...</div>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" width="22" height="22"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ─── Link Edit Modal ────────────────────────────────────── -->
+    <div class="modal-overlay" id="link-modal-overlay">
+        <div class="modal glass-card modal-sm" style="z-index:250;">
+            <div class="modal-header"><h2>Edit Link</h2><button class="modal-close" id="link-modal-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+            <form id="link-form">
+                <input type="hidden" id="link-edit-index" value="">
+                <div class="form-group"><label>Link Title <span id="link-title-counter" style="float:right;font-weight:400;color:var(--text-muted)">0/20</span></label><input type="text" id="input-link-title" maxlength="20" placeholder="e.g. Get it now" required></div>
+                <div class="form-group"><label>Button URL</label><input type="url" id="input-link-url" placeholder="https://yourlink.com" required></div>
+                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Save Link</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+    <script src="/static/automation.js"></script>
+</body>
+</html>
