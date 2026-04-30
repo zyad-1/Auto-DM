@@ -25,13 +25,13 @@ templates = Jinja2Templates(directory="templates")
 async def login_page(request: Request):
     if get_current_user_id(request) is not None:
         return RedirectResponse(url="/dashboard", status_code=302)
-    return templates.TemplateResponse(name="login.html", context={"request": request, "mode": "login"})
+    return templates.TemplateResponse(request, "login.html", {"mode": "login"})
 
 @router.get("/signup")
 async def signup_page(request: Request):
     if get_current_user_id(request) is not None:
         return RedirectResponse(url="/dashboard", status_code=302)
-    return templates.TemplateResponse(name="login.html", context={"request": request, "mode": "signup"})
+    return templates.TemplateResponse(request, "login.html", {"mode": "signup"})
 
 
 # ─── API Endpoints ───────────────────────────────────────────────────────────
